@@ -8,18 +8,18 @@ import javax.swing.text.*;
 
 public class Board extends JPanel
 {
-	int size;
 	Cell[][] grid;
 	
-	public Board(int size, Cell[][] grid)
+	public Board(Cell[][] grid)
 	{
-		this.size = size;
 		this.grid = grid;
-		setPreferredSize(new Dimension(size*(grid[0].length), size*(grid.length)));
 	}
 	
 	public void paintComponent(Graphics g)
 	{
+		int width = (int) Math.round(getWidth() / grid[0].length);
+		int height = (int) Math.round(getHeight() / grid.length);
+		
 		for (int i = 0; i < grid.length; i++)
 		{
 			for (int j = 0; j < grid[0].length; j++)
@@ -28,7 +28,7 @@ public class Board extends JPanel
 				if (grid[i][j].getState() == 1) g.setColor(Color.LIGHT_GRAY);
 				else if (grid[i][j].getState() == 2) g.setColor(Color.GRAY);
 				else if (grid[i][j].getState() == 3) g.setColor(Color.RED);
-				g.fillRect(j*size, i*size, size, size);
+				g.fillRect(j*width, i*height, width, height);
 			}
 		}
 	}
