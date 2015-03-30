@@ -8,15 +8,17 @@ import javax.swing.text.*;
 
 public class Snake
 {
-	public static int size = 15;
 	public static Cell[][] grid = new Cell[40][40];
 	public static int dir = 1;
 	public static int medDir = 1;
 	public static ArrayList<Point> creature = new ArrayList<Point>();
 	public static boolean playTime = false;
-	public static int delayIndex = 1;
+	public static int diffIndex = 1;
 	public static int[] delays = {70, 50, 30};
 	public static int score = 0;
+	public static int[] trails = {2, 3, 6};
+	public static int trail = 0;
+	//public static JPanel buttonPanel;
 	
 	//                        D  W   A  S
 	public static int[] dX = {1, 0, -1, 0};
@@ -33,8 +35,11 @@ public class Snake
 			}
 		}
 		
+		JFrame frame = new JFrame("Snake");
+		frame.setPreferredSize(new Dimension(grid[0].length * 400 / grid[0].length, grid.length * 400 / grid.length));
+
 		//create the board and add the keylistener
-		Board board = new Board(size, grid);
+		Board board = new Board(grid);
 		board.addKeyListener(new KeyAdapter()
 		{
 			public void keyPressed(KeyEvent e)
@@ -46,6 +51,9 @@ public class Snake
 				if (input == 's' || input == 'S') medDir = 3;
 			}
 		});
+
+		//create the score label
+		JLabel scoreLabel = new JLabel("Score: " + score);
 		
 		//make the reset button
 		JButton playButton = new JButton("   Play   ");
@@ -53,7 +61,12 @@ public class Snake
 		{
 			public void actionPerformed(ActionEvent e)
 			{
-				if (!playTime) playTime = true;
+				if (!playTime)
+				{
+					score = 0;
+					scoreLabel.setText("Score: " + score);
+					playTime = true;
+				}
 			}
 		});
 		
@@ -66,14 +79,11 @@ public class Snake
 				if (!playTime)
 				{
 					String[] diffNames = {"Easy", "Medium", "Hard"};
-					delayIndex = (delayIndex + 1) % 3;
-					diffButton.setText("Difficulty: " + diffNames[delayIndex]);
+					diffIndex = (diffIndex + 1) % 3;
+					diffButton.setText("Difficulty: " + diffNames[diffIndex]);
 				}
 			}
 		});
-		
-		//create the score label
-		JLabel scoreLabel = new JLabel("Score: " + score);
 		
 		//create the button panel and add components
 		JPanel buttonPanel = new JPanel();
@@ -82,7 +92,6 @@ public class Snake
 		buttonPanel.add(scoreLabel);
 		
 		//create the frame
-		JFrame frame = new JFrame("Snake");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().add(board, BorderLayout.CENTER);
 		frame.getContentPane().add(buttonPanel, BorderLayout.SOUTH);
@@ -142,7 +151,6 @@ public class Snake
 			//check for out of bounds
 			if (newX < 0 || newX >= grid[0].length || newY < 0 || newY >= grid.length || grid[newY][newX].getState() == 1)
 			{
-				System.out.println("Failed");
 				break;
 			}
 			
@@ -150,10 +158,11 @@ public class Snake
 			boolean ateCherry = false;
 			if (grid[newY][newX].getState() == 3)
 			{
+				trail += trails[diffIndex];
 				ateCherry = true;
 				score++;
 				scoreLabel.setText("Score: " + score);
-				
+				//board.repaint();
 			}
 			
 			//move the head
@@ -162,18 +171,18 @@ public class Snake
 			grid[head.getY()][head.getX()].setState(1);
 			
 			//move the tail (unless a cherry was eaten)
-			if (!ateCherry)
+			if (trail == 0)
 			{
 				Point tail = creature.remove(creature.size() - 1);
 				grid[tail.getY()][tail.getX()].setState(0);
-			}
+			} else { trail--; }
 			
 			//if a cherry was eaten, make a new one
 			if (ateCherry) createCherry();
 			
 			//paint and sleep
 			board.repaint();
-			try{Thread.sleep(delays[delayIndex]);} catch (Exception e){}
+			try{Thread.sleep(delays[diffIndex]);} catch (Exception e){}
 		}		
 	}
 	
